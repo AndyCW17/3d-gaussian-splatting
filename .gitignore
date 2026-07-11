@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+data/raw/
+data/processed/
+outputs/
+checkpoints/
+*.ply
+*.splat
+*.pt
+*.pth
+.env
+*.env
+.DS_Store
