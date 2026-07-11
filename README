@@ -1,0 +1,15 @@
+# splat-project
+
+Upload photos of an object or scene, reconstruct it as a 3D Gaussian Splat, view it in-browser.
+
+Built on top of gsplat's rasterization kernel; everything else (Gaussian
+representation, camera math, training loop, densification, post-training
+compression) is implemented from scratch.
+
+## Project layout
+- `src/splatproj/data` — COLMAP output parsing, dataset loading
+- `src/splatproj/camera` — camera intrinsics/extrinsics, projection math
+- `src/splatproj/model` — Gaussian parameters, rasterization wrapper
+- `src/splatproj/training` — training loop, adaptive density control
+- `src/splatproj/compression` — post-training quantization/pruning
+- `src/splatproj/api` — FastAPI backend, Claude-generated scene reports
