@@ -31,6 +31,8 @@ class Intrinsics:
             [ fx  0  cx ]
             [ 0  fy  cy ]
             [ 0   0   1 ]
+        fx and fy are focal lengths which means how zoomed camera is looking at
+        cx and cy are the optical center of the camera
         """
         return np.array(
             [
