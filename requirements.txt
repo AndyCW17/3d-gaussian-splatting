@@ -1,0 +1,11 @@
+torch>=2.2
+numpy
+gsplat>=1.4
+pycolmap
+Pillow
+opencv-python-headless
+fastapi
+uvicorn[standard]
+python-multipart
+anthropic
+pytest
