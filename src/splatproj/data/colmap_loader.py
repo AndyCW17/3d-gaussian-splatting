@@ -19,6 +19,7 @@ import numpy as np
 from splatproj.camera.camera import Intrinsics
 from splatproj.camera.camera import Camera, Extrinsics
 from splatproj.camera.rotation import quaternion_to_rotation_matrix
+from splatproj.data.point_cloud import SparsePointCloud
 
 
 def parse_cameras_txt(path: str) -> dict[int, Intrinsics]:
@@ -100,3 +101,31 @@ def parse_images_txt(path: str, cameras: dict[int, Intrinsics] ) -> list[Camera]
             image_name=image_name,
         ))
     return result
+
+
+def parse_points3d_txt(path: str) -> SparsePointCloud:
+    """
+    Reads a COLMAP points3D.txt file. We only keep position and color ---
+    per-point error and the image track are COLMAP-internal bookkeeping,
+    no need for our training.
+    """
+    points = []
+    colors = []
+
+    with open(path, "r") as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith('#'):
+                continue
+
+            parts = line.split()
+            x, y, z = (float(p) for p in parts[1:4])
+            r, g, b = (int(p) for p in parts[4:7])
+
+            points.append([x, y , z])
+            colors.append([r, g, b])
+
+    return SparsePointCloud(
+        points=np.array(points, dtype=np.float32),
+        colors=np.array(colors, dtype=np.uint8),
+    )
