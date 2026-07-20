@@ -46,7 +46,7 @@ class GaussianModel(nn.Module):
 
         # Opacity: a single value per Gaussian, moderate to start so
         # gradients can push it toward more or less transparent.
-        opacities = torch.full((n, 4),initial_opacity ,dtype=torch.float32)
+        opacities = torch.full((n,), initial_opacity ,dtype=torch.float32)
         self.opacities = nn.Parameter(opacities)
 
         # Color: taken directly from the point cloud's RGB, normalized
