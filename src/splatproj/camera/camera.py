@@ -42,6 +42,21 @@ class Intrinsics:
             ],
             dtype=np.float32,
         )
+    
+
+    def scaled(self, factor: float) -> "Intrinsics":
+        """Returns a copy of these intrinsics at a different resolution.
+        factor < 1 shrinks (e.g. 0.1 = one-tenth resolution). Since a
+        pinhole camera's parameters scale linearly with image size, this
+        represents the exact same camera/framing, just fewer pixels."""
+        return Intrinsics(
+            fx=self.fx * factor,
+            fy=self.fy * factor,
+            cx=self.cx * factor,
+            cy=self.cy * factor,
+            width=int(self.width * factor),
+            height=int(self.height * factor),
+        )
 
 
 @dataclass
