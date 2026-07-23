@@ -25,7 +25,9 @@ def _gaussian_kernel(window_size: int, sigma: float, device) -> torch.Tensor:
     """1D gaussian kernel, used to build a 2d blur window for SSIM's local 
     windowed statistics (mean, variance, covariance)."""
     coords = torch.arange(window_size, dtype=torch.float32, device=device) - window_size // 2
-    g = torch.exp(-(coords**2) / (2 * sigma**2))
+    # creates an 1D array with shape(window_size,) that are large in the center and tapers off, 
+    # ie: window_size=11, coords = [-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5]
+    g = torch.exp(-(coords**2) / (2 * sigma**2)) # exponential makes in center large, taper to the side
     return g / g.sum()
 
 
@@ -45,29 +47,31 @@ def ssim(rendered: torch.Tensor, target: torch.Tensor, window_size: int = 11) ->
     # SSIM operates per-channel via 2D convolution, so reshape from
     # (H, W, 3) to (1, 3, H, W) --- the (batch, channels, H, W) format
     # torch's conv2d expects.
-    r = rendered.permute(2, 0, 1).unsqueeze(0)
+    r = rendered.permute(2, 0, 1).unsqueeze(0) 
     t = target.permute(2, 0, 1).unsqueeze(0)
+    # (H, W, 3) -> (1, 3, H, W) F.conv2d shape we need later
 
     kernel_1d = _gaussian_kernel(window_size, sigma=1.5, device=device)
-    kernel_2d = kernel_1d[:, None] @ kernel_1d[None, :]
+    kernel_2d = kernel_1d[:, None] @ kernel_1d[None, :]  #say window_size=11, then has shape(11, 11)
     kernel = kernel_2d.expand(3, 1, window_size, window_size)
+    # channels for RGB get blurred separately so kernel expand kernel to (3, 1, 11, 11)
 
     pad = window_size // 2
-    mu_r = F.conv2d(r, kernel, padding=pad, groups=3)
+    mu_r = F.conv2d(r, kernel, padding=pad, groups=3) # blurred RGB values
     mu_t = F.conv2d(t, kernel, padding=pad, groups=3)
     mu_r_sq, mu_t_sq, mu_rt = mu_r**2, mu_t**2, mu_r * mu_t
 
-    sigma_r_sq = F.conv2d(r * r, kernel, padding=pad, groups=3) - mu_r_sq
+    sigma_r_sq = F.conv2d(r * r, kernel, padding=pad, groups=3) - mu_r_sq # local variance
     sigma_t_sq = F.conv2d(t * t, kernel, padding=pad, groups=3) - mu_t_sq
-    sigma_rt = F.conv2d(r * t, kernel, padding=pad, groups=3) - mu_rt
+    sigma_rt = F.conv2d(r * t, kernel, padding=pad, groups=3) - mu_rt # local covariance
 
     # Small stability constants (standard SSIM values for [0,1]-range images)
-    c1, c2 = 0.01**2, 0.03**2
+    c1, c2 = 0.01**2, 0.03**2 #numerical safety, preventing division by zero/near-zero when a patch is completely flat
 
     numerator = (2 * mu_rt + c1) * (2 * sigma_rt + c2)
     denominator = (mu_r_sq + mu_t_sq + c1) * (sigma_r_sq + sigma_t_sq + c2)
 
-    return (numerator / denominator).mean()
+    return (numerator / denominator).mean() # per pixel per channel similarity score to per image score
 
 
 def training_loss(rendered: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
