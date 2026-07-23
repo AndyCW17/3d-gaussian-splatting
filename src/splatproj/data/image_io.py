@@ -26,3 +26,19 @@ def save_render(image: torch.Tensor, path: str) -> None:
     array_uint8 = (array * 255).astype(np.uint8)
 
     Image.fromarray(array_uint8).save(path)
+
+
+def load_target_image(path: str, target_width: int, target_height: int) -> torch.Tensor:
+    """
+    Loads a real photo and resizes it to match a (possibly downscaled)
+    camera's resolution, so it can be directly compared against a render
+    from that same camera.
+
+    Returns:
+        (H, W, 3) tensor, values in [0, 1] --- same convention as render().
+    """
+    img = Image.open(path).convert("RGB")
+    img = img.resize((target_width, target_height), Image.BILINEAR)
+
+    array = np.array(img, dtype=np.float32) / 255.0
+    return torch.from_numpy(array)
