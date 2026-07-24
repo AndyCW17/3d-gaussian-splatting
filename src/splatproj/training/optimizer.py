@@ -23,12 +23,12 @@ def build_optimizer(model: GaussianModel) -> torch.optim.Adam:
 
         # Scale and roatation: moderate rates --- these control shape, and 
         # neeed to adjust noticeably during training but shouldn't swing badly
-        {"params": [model.scales], "lr":5e-3, "name": "scales"},
+        {"params": [model.raw_scales], "lr":5e-3, "name": "raw_scales"},
         {"params": [model.quats], "lr":5e-3, "name": "quats"},
 
         # Opacity and color: can tolerate larger, faster-moving updates,
         # since they're bounded/normalized quantities, not spatial coordinates
-        {"params": [model.opacities], "lr":5e-2, "name": "opacities"},
+        {"params": [model.raw_opacities], "lr":5e-2, "name": "raw_opacities"},
         {"params": [model.colors], "lr":5e-2, "name": "colors"},
     ]
     return torch.optim.Adam(param_groups, eps=1e-15)

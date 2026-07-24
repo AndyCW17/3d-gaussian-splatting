@@ -19,6 +19,7 @@ def train(
     num_iterations: int,
     device: str = "cuda",
     log_every: int = 50,
+    on_iteration=None,
 ) -> list[float]:
     """
     Runs the training loop.
@@ -42,6 +43,8 @@ def train(
         optimizer.step()
 
         loss_history.append(loss.item())
+        if on_iteration is not None:
+            on_iteration(iteration, loss.item, model)
 
         if iteration % log_every == 0:
             print(f"iter {iteration:5d} | loss {loss.item():.4f} | "
