@@ -7,4 +7,4 @@ MSYS_NO_PATHCONV=1 docker run --rm --gpus all \
   -v "$(pwd)/src:/app/src" \
   -v "$(pwd)/tests:/app/tests" \
   splat-project \
-  bash -c "pip install pytest -q && PYTHONPATH=src pytest tests/ -v"
+  bash -c "pip install pytest -q && PYTHONPATH=src pytest tests/ -v -s"
