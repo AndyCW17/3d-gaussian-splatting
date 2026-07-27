@@ -35,7 +35,7 @@ def train(
         camera, target = dataset[idx]
         target = target.to(device)
 
-        rendered = render(model, camera, device=device)
+        rendered, meta = render(model, camera, device=device)
         loss = training_loss(rendered, target)
 
         optimizer.zero_grad()

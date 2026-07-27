@@ -25,7 +25,7 @@ def test_render_output_shape():
     cloud = make_test_point_cloud(n=20)
     model = GaussianModel(cloud)
 
-    image = render(model, camera, device="cuda")
+    image, _ = render(model, camera, device="cuda")
 
     assert image.shape == (64, 64, 3)
 
@@ -36,7 +36,7 @@ def test_render_output_has_no_nans():
     cloud = make_test_point_cloud(n=20)
     model = GaussianModel(cloud)
 
-    image = render(model, camera, device="cuda")
+    image, _ = render(model, camera, device="cuda")
 
     assert not torch.isnan(image).any()
     assert image.min() >= 0.0

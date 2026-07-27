@@ -45,7 +45,8 @@ def test_training_loss_decreases():
     # as the real photo we're training against.
     true_model = GaussianModel(cloud)
     with torch.no_grad():
-        target_image = render(true_model, camera, device="cuda").clone()
+        target_image, _ = render(true_model, camera, device="cuda")
+        target_image = target_image.clone()
 
     # The "student" --- same shape/positions, but wrong (random) colors.
     # Only this model gets trained.

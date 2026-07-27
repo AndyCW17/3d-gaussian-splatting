@@ -57,6 +57,11 @@ def render(model: GaussianModel, camera: Camera, device: str = "cuda") -> torch.
         height=camera.intrinsics.height,
     )
 
+    # The meta will be used for gsplat densification
+    if meta["means2d"].requires_grad:
+        meta["means2d"].retain_grad()
+
+
     # render shape:(1, H, W, 3) --- we only passed one camera, so drop
     # that leading "batch of cameras" dimension.
-    return renders[0]
+    return renders[0], meta

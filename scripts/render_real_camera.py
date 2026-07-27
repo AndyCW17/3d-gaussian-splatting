@@ -35,7 +35,7 @@ def main():
     print("Rendering from {camera.image_name} at {small_intrinsics.width}x{small_intrinsics.height}")
 
     model = GaussianModel(cloud, initial_scale=0.02)
-    image = render(model, camera, device="cuda")
+    image, _ = render(model, camera, device="cuda")
 
     save_render(image, out_path)
     print(f"Saved to {out_path}.")

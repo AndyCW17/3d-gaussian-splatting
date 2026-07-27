@@ -36,7 +36,7 @@ def main():
 
     def on_iteration(iteration, loss_value, model):
         if iteration % 200 == 0:
-            with_no_grad_image = render(model, snapshot_camera, device="cuda")
+            with_no_grad_image, _ = render(model, snapshot_camera, device="cuda")
             save_render(with_no_grad_image, f"{output_dir}/snapshots/iter_{iteration:05d}.png")
 
     num_iterations = 3000

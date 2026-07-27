@@ -33,7 +33,7 @@ def main():
     cloud = SparsePointCloud(points=points, colors=colors)
 
     model = GaussianModel(cloud)
-    image = render(model, camera, device="cuda")
+    image, _ = render(model, camera, device="cuda")
 
     save_render(image, "outputs/sanity_check.png")
     print("Saved to outputs/sanity_check.png")
