@@ -55,6 +55,7 @@ def render(model: GaussianModel, camera: Camera, device: str = "cuda") -> torch.
         Ks=K,
         width=camera.intrinsics.width,
         height=camera.intrinsics.height,
+        packed=False,
     )
 
     # The meta will be used for gsplat densification

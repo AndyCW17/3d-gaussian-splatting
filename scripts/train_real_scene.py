@@ -10,6 +10,7 @@ Run inside Docker (needs GPU):
 
 import os
 import sys
+import functools
 from splatproj.data.scene_dataset import SceneDataset
 from splatproj.data.image_io import save_render
 from splatproj.model.gaussians import GaussianModel
@@ -17,7 +18,12 @@ from splatproj.model.renderer import render
 from splatproj.training.optimizer import build_optimizer
 from splatproj.training.train import train
 from splatproj.training.checkpoint import save_checkpoint
-
+from splatproj.training.density_control import (
+    DensificationState,
+    DensificationConfig,
+    densify_and_prune,
+    reset_opacities,
+)
 
 def main():
     sparse_folder, images_folder, output_dir = sys.argv[1], sys.argv[2], sys.argv[3]
@@ -29,6 +35,17 @@ def main():
 
     model = GaussianModel(point_cloud, initial_scale=0.02).to("cuda")
     optimizer = build_optimizer(model)
+
+    # Sized to the model's starting Gaussian count. densify_and_prune
+    # resizes these buffers internally every time it fires, so this only
+    # needs to be right for the very first accumulation window.
+    density_state = DensificationState(len(model), device="cuda")
+ 
+    # densify_and_prune takes (model, optimizer, density_state, config),
+    # but train.py's densify_fn hook only calls it with 3 positional args
+    # -- partial binds our config choice as the 4th so the signatures match.
+    densify_config = DensificationConfig()
+    densify_fn = functools.partial(densify_and_prune, config=densify_config)
 
     # Fixed camera used for every progress snapshot, so they're directly
     # comparable to each other over time --- watching the SAME view sharpen.
@@ -43,8 +60,13 @@ def main():
     loss_history = train(
         model, dataset, optimizer, num_iterations,
         device="cuda", log_every=100, on_iteration=on_iteration,
+        density_state=density_state, densify_fn=densify_fn,
+        densify_start=500, densify_end=2500, densify_every=50,
+        opacity_reset_fn=reset_opacities,
+        opacity_reset_start=500, opacity_reset_every=800,
     )
 
+    print(f"final Gaussian count: {len(model)}")
     print(f"scale range: {model.scales.min().item():.4f} to {model.scales.max().item():.4f}")
     print(f"opacity range: {model.opacities.min().item():.4f} to {model.opacities.max().item():.4f}")
 
